@@ -41,30 +41,28 @@ def choose_ucb(stats, total):
 def main(rounds=50, wait_time=5):
     configs = get_all_configs()
     if not configs:
-        print("No configurations returned by server")
+        print("Nenhuma configuração retornada pelo servidor")
         return
     stats = {cfg: {"count": 0, "reward": 0.0} for cfg in configs}
     total = 0
 
     for i in range(rounds):
         cfg = choose_ucb(stats, total)
-        print(f"[Round {i+1}] selecting config: {cfg}")
+        print(f"[Round {i+1}] selecionando config: {cfg}")
         set_config(cfg)
         time.sleep(wait_time)
         perception = get_perception()
-        metric = None
-        if perception and perception.get("metrics"):
-            metric = perception["metrics"][0].get("metric")
-        if metric is None:
-            metric = 0
-        reward = -metric  # lower metric is better
+        metric = 0
+        if isinstance(perception, dict) and perception.get("metrics"):
+            metric = perception["metrics"][0].get("metric", 0)
+        reward = -metric
         stats[cfg]["count"] += 1
         stats[cfg]["reward"] += reward
         total += 1
         print(f"  metric={metric}")
 
     best_cfg = max(stats.keys(), key=lambda c: stats[c]["reward"] / stats[c]["count"] if stats[c]["count"] else float('-inf'))
-    print(f"Best configuration found: {best_cfg}")
+    print(f"Mlehor condiguração encontrada: {best_cfg}")
 
 
 if __name__ == "__main__":
